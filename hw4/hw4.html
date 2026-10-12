@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS 412 — HW4 | Kinetic Lab</title>
+  <style>
+    :root { --bg:#080e18; --panel:#101b2b; --panel2:#152337; --stroke:#26384d; --muted:#93a9bf; --text:#e9f2fb; --aqua:#44e6cf; --gold:#ffbe69; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .top { display:flex; align-items:center; justify-content:space-between; gap:15px; padding:19px 30px; border-bottom:1px solid #26374a; background:#0b1320; }
+    .eyebrow { font:700 10px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace; color:var(--aqua); letter-spacing:2.6px; }
+    h1 { margin:4px 0 0; font-size:23px; letter-spacing:1.5px; font-weight:750; }
+    h1 span { font-weight:350; color:#8195aa; }
+    .top-note { color:#8fa5b7; font:11px ui-monospace,SFMono-Regular,Consolas,monospace; text-align:right; }
+    .tag { display:inline-block; border:1px solid #28605a; border-radius:20px; padding:5px 9px; color:#7cf5de; margin-bottom:6px; }
+    .layout { display:grid; grid-template-columns:minmax(530px,1fr) 332px; max-width:1500px; margin:0 auto; min-height:calc(100vh - 89px); }
+    .viewport-pane { padding:18px; min-width:0; }
+    .viewport { position:relative; width:100%; overflow:hidden; border:1px solid #294358; background:#08111f; border-radius:13px; }
+    #glcanvas { display:block; width:100%; height:auto; touch-action:none; cursor:grab; }
+    #glcanvas:active { cursor:grabbing; }
+    .hud { position:absolute; pointer-events:none; font:11px ui-monospace,SFMono-Regular,Consolas,monospace; color:#9cb3c8; }
+    .hud.top-left { top:20px; left:21px; }
+    .hud.top-right { top:19px; right:19px; text-align:right; }
+    .hud.bottom-left { bottom:18px; left:21px; }
+    .corner-title { color:#edf9ff; font-size:14px; letter-spacing:1.4px; font-weight:bold; margin-bottom:8px; }
+    .live-dot { display:inline-block; width:7px; height:7px; border-radius:100%; background:var(--aqua); box-shadow:0 0 14px var(--aqua); margin-right:6px; }
+    .footnote { display:flex; gap:20px; flex-wrap:wrap; color:#849cb3; font:12px ui-monospace,SFMono-Regular,Consolas,monospace; padding:16px 5px; }
+    .footnote strong { color:#cae4f1; }
+    aside { background:#101b2a; border-left:1px solid #263a50; padding:22px; }
+    .section-label { color:#78ecd9; font:700 10px ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:2px; margin:4px 0 18px; }
+    .section-label:not(:first-child) { margin-top:25px; border-top:1px solid #2a3b4e; padding-top:25px; }
+    .hint { font-size:12px; line-height:1.6; color:var(--muted); margin:-6px 0 17px; }
+    .control { margin-bottom:21px; }
+    .row { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:9px; }
+    label { font-size:13px; font-weight:600; }
+    output { color:#e7d6ae; font:12px ui-monospace,SFMono-Regular,Consolas,monospace; }
+    input[type=range] { width:100%; accent-color:var(--aqua); cursor:pointer; }
+    .range-ends { display:flex; justify-content:space-between; color:#758da4; font:10px ui-monospace,SFMono-Regular,Consolas,monospace; margin-top:3px; }
+    .btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    button { background:#1a2c41; border:1px solid #3a5268; color:#dbeaf6; border-radius:7px; padding:11px 8px; font:600 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; cursor:pointer; transition:background .14s,border-color .14s; }
+    button:hover { background:#243d53; border-color:#5d7b91; }
+    button.primary { background:#11695e; color:#eafffa; border-color:#25a999; }
+    button.primary:hover { background:#1b8275; }
+    button.active { color:#62ffe1; border-color:#279789; background:#123c3c; }
+    .switch-row { display:flex; align-items:center; justify-content:space-between; margin:15px 0; gap:8px; }
+    .switch-row label { font-size:12px; color:#d1e3f0; }
+    input[type=checkbox] { width:16px; height:16px; accent-color:var(--aqua); cursor:pointer; }
+    .structure { padding:13px; background:#0c1522; border:1px solid #2d4154; border-radius:8px; color:#a6bacc; font:12px/1.85 ui-monospace,SFMono-Regular,Consolas,monospace; }
+    .structure b { color:#57e9d2; font-weight:600; }
+    .structure .indent1 { padding-left:16px; }.structure .indent2 { padding-left:32px; }.structure .indent3 { padding-left:48px; }.structure .indent4 { padding-left:64px; }
+    .status { margin:16px 0 0; color:#8facba; font:11px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace; }
+    @media(max-width:950px) { .layout { grid-template-columns:1fr; } aside { border-left:0; border-top:1px solid #293c4e; } .viewport-pane { padding:12px; } }
+    @media(max-width:560px) { .top { padding:14px; } .top-note { display:none; } .hud.top-right { display:none; } }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div><div class="eyebrow">UNM / COMPUTER GRAPHICS / HW 04</div><h1>KINETIC <span>//</span> LAB</h1></div>
+    <div class="top-note"><div class="tag"><span class="live-dot"></span> WEBGL 2.0 ONLINE</div><div>HIERARCHICAL MODELING · JUNHO LEE</div></div>
+  </header>
+  <main class="layout">
+    <section class="viewport-pane">
+      <div class="viewport">
+        <canvas id="glcanvas" width="1100" height="790">WebGL2 is required for this assignment.</canvas>
+        <div class="hud top-left"><div class="corner-title">ARTICULATED MANIPULATOR</div><span class="live-dot"></span><span id="liveLabel">MANUAL CONTROL</span></div>
+        <div class="hud top-right">5-LEVEL KINEMATIC CHAIN<br>REAL-TIME FORWARD TRANSFORMS<br><span style="color:#6fe5d6">BASE &gt; SHOULDER &gt; ELBOW &gt; WRIST &gt; GRIPPER</span></div>
+        <div class="hud bottom-left">DRAG TO ORBIT  &nbsp;·&nbsp; SCROLL TO ZOOM<br>CHANGE A PARENT JOINT TO MOVE EVERY CHILD</div>
+      </div>
+      <div class="footnote"><span><strong>01</strong> Parent-child transformations</span><span><strong>02</strong> Five independently movable joints</span><span><strong>03</strong> Manual + animated controls</span></div>
+    </section>
+    <aside>
+      <div class="section-label">01 / JOINT CONTROLS</div>
+      <p class="hint">Move any joint and watch the attached child segments inherit its transform. Adjusting a slider exits auto mode.</p>
+      <div class="control"><div class="row"><label for="base">01 &nbsp; Base rotation</label><output id="baseValue">-18°</output></div><input id="base" type="range" min="-180" max="180" value="-18" step="1"><div class="range-ends"><span>-180°</span><span>+180°</span></div></div>
+      <div class="control"><div class="row"><label for="shoulder">02 &nbsp; Shoulder pitch</label><output id="shoulderValue">40°</output></div><input id="shoulder" type="range" min="-35" max="100" value="40" step="1"><div class="range-ends"><span>-35°</span><span>+100°</span></div></div>
+      <div class="control"><div class="row"><label for="elbow">03 &nbsp; Elbow bend</label><output id="elbowValue">37°</output></div><input id="elbow" type="range" min="-125" max="125" value="37" step="1"><div class="range-ends"><span>-125°</span><span>+125°</span></div></div>
+      <div class="control"><div class="row"><label for="wrist">04 &nbsp; Wrist pitch</label><output id="wristValue">-16°</output></div><input id="wrist" type="range" min="-140" max="140" value="-16" step="1"><div class="range-ends"><span>-140°</span><span>+140°</span></div></div>
+      <div class="control"><div class="row"><label for="grip">05 &nbsp; Gripper opening</label><output id="gripValue">40%</output></div><input id="grip" type="range" min="0" max="100" value="40" step="1"><div class="range-ends"><span>CLOSED</span><span>OPEN</span></div></div>
+      <div class="section-label">02 / PLAYBACK</div>
+      <div class="btns"><button class="primary" id="btnAuto">▶ Start auto demo</button><button id="btnResetPose">↺ Reset pose</button></div>
+      <div class="control" style="margin-top:20px;"><div class="row"><label for="speed">Animation speed</label><output id="speedValue">1.00×</output></div><input id="speed" type="range" min="0.2" max="3" value="1" step="0.1"></div>
+      <div class="section-label">03 / DISPLAY</div>
+      <div class="btns"><button id="btnProjection">Perspective view</button><button id="btnCamera">Reset camera</button></div>
+      <div class="switch-row"><label for="showTrail">Show end-effector trajectory</label><input id="showTrail" type="checkbox" checked></div>
+      <div class="switch-row"><label for="showGrid">Show reference grid</label><input id="showGrid" type="checkbox" checked></div>
+      <div class="section-label">04 / HIERARCHY</div>
+      <div class="structure"><div><b>ROOT</b> Base / rotate Y</div><div class="indent1">└─ Shoulder / rotate Z</div><div class="indent2">└─ Elbow / rotate Z</div><div class="indent3">└─ Wrist / rotate Z</div><div class="indent4">└─ Gripper / open-close</div></div>
+      <p class="status">Each child matrix is calculated as<br><strong style="color:#b5eadc">M_child = M_parent × T_joint × R_joint</strong><br><br>Mesh vertices: WebGL2 + procedural primitives.<br>Controls and animation: vanilla JavaScript.</p>
+    </aside>
+  </main>
+  <script src="primitives.js"></script>
+  <script src="transformations.js"></script>
+  <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
+    in vec3 aPosition;
+    in vec3 aColor;
+    uniform mat4 uModel;
+    uniform mat4 uView;
+    uniform mat4 uProjection;
+    out vec3 vWorldPosition;
+    out vec3 vColor;
+    void main() {
+      vec4 world = uModel * vec4(aPosition, 1.0);
+      vWorldPosition = world.xyz;
+      vColor = aColor;
+      gl_Position = uProjection * uView * world;
+    }
+  </script>
+  <script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
+    precision highp float;
+    in vec3 vWorldPosition;
+    in vec3 vColor;
+    uniform vec3 uPaint;
+    uniform float uUseVertexColor;
+    uniform float uEmissive;
+    uniform float uAlpha;
+    out vec4 fragColor;
+    void main() {
+      // Screen-space derivatives produce per-face normals for ALL HW3 primitives,
+      // including the original cube with its shared corner vertices.
+      vec3 normal = normalize(cross(dFdx(vWorldPosition), dFdy(vWorldPosition)));
+      vec3 lightDir = normalize(vec3(-0.6, 1.0, -0.8));
+      vec3 viewDir = normalize(vec3(1.0, 3.0, -12.0) - vWorldPosition);
+      if (dot(normal, viewDir) < 0.0) normal = -normal;
+      float diffuse = max(dot(normal, lightDir), 0.0);
+      vec3 halfway = normalize(lightDir + viewDir);
+      float specular = pow(max(dot(normal, halfway), 0.0), 48.0);
+      vec3 albedo = mix(uPaint, vColor, uUseVertexColor);
+      vec3 lit = albedo * (0.38 + 0.65 * diffuse) + vec3(0.36, 0.56, 0.68) * specular * 0.34;
+      vec3 color = lit + albedo * uEmissive * 0.95;
+      color = color / (color + vec3(0.18)); // soft highlight rolloff
+      fragColor = vec4(color, uAlpha);
+    }
+  </script>
+  <script>
+    'use strict';
+    // CS 412 / HW4 — hierarchical modeling. Builds directly on HW3's
+    // primitives.js and transformations.js (no third-party 3D engine).
+    const canvas = document.getElementById('glcanvas');
+    const gl = canvas.getContext('webgl2', { alpha: false, antialias: true });
+    if (!gl) {
+      document.getElementById('liveLabel').textContent = 'WEBGL2 NOT SUPPORTED';
+      throw new Error('A browser with WebGL2 support is required.');
+    }
+
+    function compileShader(type, source) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, source);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+      return s;
+    }
+    const program = gl.createProgram();
+    gl.attachShader(program, compileShader(gl.VERTEX_SHADER, document.getElementById('vertex-shader').textContent));
+    gl.attachShader(program, compileShader(gl.FRAGMENT_SHADER, document.getElementById('fragment-shader').textContent));
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
+    gl.useProgram(program);
+    const loc = {
+      pos: gl.getAttribLocation(program, 'aPosition'),
+      col: gl.getAttribLocation(program, 'aColor'),
+      model: gl.getUniformLocation(program, 'uModel'),
+      view: gl.getUniformLocation(program, 'uView'),
+      projection: gl.getUniformLocation(program, 'uProjection'),
+      paint: gl.getUniformLocation(program, 'uPaint'),
+      useVertexColor: gl.getUniformLocation(program, 'uUseVertexColor'),
+      emissive: gl.getUniformLocation(program, 'uEmissive'),
+      alpha: gl.getUniformLocation(program, 'uAlpha')
+    };
+    function createMesh(data) {
+      const vao = gl.createVertexArray();
+      gl.bindVertexArray(vao);
+      const vb = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, vb);
+      gl.bufferData(gl.ARRAY_BUFFER, data.positions, gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(loc.pos);
+      gl.vertexAttribPointer(loc.pos, 3, gl.FLOAT, false, 0, 0);
+      const cb = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, cb);
+      gl.bufferData(gl.ARRAY_BUFFER, data.colors, gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(loc.col);
+      gl.vertexAttribPointer(loc.col, 3, gl.FLOAT, false, 0, 0);
+      const ib = gl.createBuffer();
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data.indices, gl.STATIC_DRAW);
+      gl.bindVertexArray(null);
+      return { vao, count: data.indices.length };
+    }
+    const meshes = {
+      cube: createMesh(makeCube()), cylinder: createMesh(makeCylinder()),
+      sphere: createMesh(makeSphere()), torus: createMesh(makeTorus()), cone: createMesh(makeCone())
+    };
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    const palette = {
+      dark: [0.07, 0.15, 0.23], steel: [0.28, 0.48, 0.60],
+      shell: [0.68, 0.80, 0.86], accent: [0.12, 0.85, 0.76],
+      gold: [1.0, 0.65, 0.28], cobalt: [0.20, 0.38, 0.65],
+      floor: [0.072, 0.11, 0.17], grid: [0.07, 0.25, 0.31]
+    };
+    const rad = d => d * Math.PI / 180;
+    const poseDefaults = Object.freeze({base:-18, shoulder:40, elbow:37, wrist:-16, grip:40});
+    const pose = {...poseDefaults};
+    const controls = {};
+    let auto = false, autoTime = 0, lastFrame = performance.now();
+    let trail = [], trailAccum = 0;
+    const ids = ['base','shoulder','elbow','wrist','grip'];
+    function syncControls() {
+      for (const id of ids) {
+        controls[id].value = Math.round(pose[id]);
+        document.getElementById(id + 'Value').textContent = Math.round(pose[id]) + (id === 'grip' ? '%' : '°');
+      }
+    }
+    function updateAutoUI() {
+      document.getElementById('btnAuto').textContent = auto ? 'Ⅱ Pause demo' : '▶ Start auto demo';
+      document.getElementById('btnAuto').classList.toggle('active', auto);
+      document.getElementById('liveLabel').textContent = auto ? 'AUTO KINEMATICS ACTIVE' : 'MANUAL CONTROL';
+    }
+    for (const id of ids) {
+      controls[id] = document.getElementById(id);
+      controls[id].addEventListener('input', () => {
+        auto = false;
+        updateAutoUI();
+        pose[id] = Number(controls[id].value);
+        syncControls();
+      });
+    }
+    document.getElementById('btnAuto').addEventListener('click', () => {
+      auto = !auto;
+      updateAutoUI();
+    });
+    document.getElementById('btnResetPose').addEventListener('click', () => {
+      Object.assign(pose, poseDefaults); auto = false; autoTime = 0; trail = [];
+      syncControls(); updateAutoUI();
+    });
+    document.getElementById('speed').addEventListener('input', e => {
+      document.getElementById('speedValue').textContent = Number(e.target.value).toFixed(2) + '×';
+    });
+    let perspectiveMode = true;
+    document.getElementById('btnProjection').addEventListener('click', () => {
+      perspectiveMode = !perspectiveMode;
+      document.getElementById('btnProjection').textContent = perspectiveMode ? 'Perspective view' : 'Orthographic view';
+    });
+    let orbitX = 0.20, orbitY = -0.45, cameraDistance = 12.7;
+    document.getElementById('btnCamera').addEventListener('click', () => {
+      orbitX = 0.20; orbitY = -0.45; cameraDistance = 12.7;
+    });
+    let drag = false, pointerX = 0, pointerY = 0;
+    canvas.addEventListener('pointerdown', e => {
+      drag = true; pointerX = e.clientX; pointerY = e.clientY;
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener('pointerup', () => drag = false);
+    canvas.addEventListener('pointercancel', () => drag = false);
+    canvas.addEventListener('pointermove', e => {
+      if (!drag) return;
+      orbitY += (e.clientX - pointerX) * 0.006;
+      orbitX = Math.max(-1.1, Math.min(1.15, orbitX + (e.clientY - pointerY) * 0.006));
+      pointerX = e.clientX; pointerY = e.clientY;
+    });
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      cameraDistance = Math.max(7.0, Math.min(22.0, cameraDistance + e.deltaY * 0.012));
+    }, { passive: false });
+
+    // Each mesh is scaled/translated in the coordinate system of its PARENT.
+    // This is also used for the decorative stage, passing an identity parent.
+    const I = mat4Identity();
+    function drawPart(meshName, parent, position, size, color, emission=0, alpha=1) {
+      const model = matMul(parent, mat4Translation(...position), mat4Scaling(...size));
+      gl.uniformMatrix4fv(loc.model, false, model);
+      gl.uniform3fv(loc.paint, color);
+      gl.uniform1f(loc.useVertexColor, 0);
+      gl.uniform1f(loc.emissive, emission);
+      gl.uniform1f(loc.alpha, alpha);
+      gl.bindVertexArray(meshes[meshName].vao);
+      gl.drawElements(gl.TRIANGLES, meshes[meshName].count, gl.UNSIGNED_SHORT, 0);
+    }
+    function transformPoint(matrix, p) {
+      return [
+        matrix[0]*p[0]+matrix[4]*p[1]+matrix[8]*p[2]+matrix[12],
+        matrix[1]*p[0]+matrix[5]*p[1]+matrix[9]*p[2]+matrix[13],
+        matrix[2]*p[0]+matrix[6]*p[1]+matrix[10]*p[2]+matrix[14]
+      ];
+    }
+    const ARM_1 = 2.1, ARM_2 = 1.57, ARM_3 = 0.43;
+    function buildHierarchy() {
+      // LEVEL 1: the rotating ROOT carries every downstream segment.
+      const base = matMul(mat4Translation(0, 0.43, 0), mat4RotationY(rad(pose.base)));
+      // LEVEL 2: shoulder is positioned relative to base, not the world.
+      const shoulder = matMul(base, mat4Translation(0, 0.64, 0), mat4RotationZ(-rad(pose.shoulder)));
+      // LEVEL 3: elbow is at the shoulder segment's END in shoulder-local coordinates.
+      const elbow = matMul(shoulder, mat4Translation(0, ARM_1, 0), mat4RotationZ(-rad(pose.elbow)));
+      // LEVEL 4: wrist inherits base, shoulder AND elbow movement.
+      const wrist = matMul(elbow, mat4Translation(0, ARM_2, 0), mat4RotationZ(-rad(pose.wrist)));
+      // LEVEL 5: hand/gripper inherits ALL the above transformations.
+      const gripper = matMul(wrist, mat4Translation(0, ARM_3, 0));
+      return {base, shoulder, elbow, wrist, gripper};
+    }
+
+    function drawStage(seconds) {
+      // Ground plane, illuminated calibration grid, robotic station.
+      drawPart('cube', I, [0,-0.40,0], [7.1,0.10,6.2], palette.floor);
+      if (document.getElementById('showGrid').checked) {
+        for (let n = -8; n <= 8; n++) {
+          drawPart('cube', I, [n*.72,-.289,0], [.008,.003,6.05], palette.grid, .16);
+          drawPart('cube', I, [0,-.289,n*.72], [6.97,.003,.008], palette.grid, .16);
+        }
+      }
+      drawPart('cylinder', I, [0,-.11,0], [1.35,.20,1.35], palette.dark);
+      drawPart('torus', I, [0,.092,0], [1.25,.025,1.25], palette.accent,1.1);
+      drawPart('cylinder', I, [0,.11,0], [.83,.08,.83], palette.steel);
+      drawPart('cylinder', I, [0,.30,0], [.69,.20,.69], palette.dark);
+      drawPart('torus', I, [0,.51,0], [.57,.026,.57], palette.gold,.3);
+      // Secondary station and a bright energy core make the scene feel like a lab.
+      drawPart('cylinder', I, [-3.1,-.12,-1.55], [.60,.20,.60], palette.dark);
+      drawPart('torus', I, [-3.1,.08,-1.55], [.54,.019,.54],palette.accent,.72);
+      drawPart('sphere', I, [-3.1,.57+.10*Math.sin(seconds*1.4),-1.55], [.36,.36,.36],palette.gold,.7);
+      drawPart('torus', I, [-3.1,.57+.10*Math.sin(seconds*1.4),-1.55], [.50,.025,.50],palette.gold,.65);
+      // Small dark industrial storage crates, separate from the kinematic chain.
+      drawPart('cube', I, [3.55,-.05,-1.8], [.42,.28,.45], palette.cobalt);
+      drawPart('cube', I, [3.55,.48,-1.8], [.40,.25,.44], palette.dark);
+      drawPart('cube', I, [4.48,-.06,-1.6], [.33,.27,.31], palette.steel);
+    }
+    function drawJoint(parent, at, radius, pulse=0) {
+      drawPart('sphere',parent,at,[radius,radius,radius],palette.dark);
+      // torus' hole is along +Y, rotate to point along +Z for the elbow joint.
+      const ringFrame = matMul(parent,mat4Translation(...at),mat4RotationX(Math.PI/2));
+      drawPart('torus',ringFrame,[0,0,0],[radius*1.19,.045,radius*1.19],palette.accent,.65+pulse);
+      drawPart('cylinder',ringFrame,[0,.01,0],[radius*.62,.15,radius*.62],palette.steel);
+    }
+    function drawArm(h, seconds) {
+      const {base,shoulder,elbow,wrist,gripper} = h;
+      // LEVEL 1, rotating root: arm column and shoulder housing.
+      drawPart('cylinder',base,[0,.15,0],[.47,.18,.47],palette.shell);
+      drawPart('cube',base,[0,.43,0],[.31,.27,.31],palette.cobalt);
+      drawPart('cube',base,[0,.64,0],[.43,.22,.35],palette.steel);
+      // LEVEL 2, shoulder: a beam runs from local y=0 to ARM_1.
+      drawJoint(shoulder,[0,0,0],.36);
+      drawPart('cube',shoulder,[0,ARM_1/2,0],[.22,ARM_1/2,.23],palette.shell);
+      drawPart('cube',shoulder,[0,ARM_1/2,-.245],[.09,ARM_1/2-.18,.045],palette.cobalt);
+      drawPart('cube',shoulder,[0,ARM_1/2,.245],[.09,ARM_1/2-.18,.045],palette.cobalt);
+      drawPart('sphere',shoulder,[0,ARM_1-.12,0],[.11,.11,.27],palette.gold,.2);
+      // LEVEL 3, elbow: another beam, in coordinates relative to shoulder.
+      drawJoint(elbow,[0,0,0],.29);
+      drawPart('cube',elbow,[0,ARM_2/2,0],[.17,ARM_2/2,.17],palette.steel);
+      drawPart('cube',elbow,[0,ARM_2/2,-.179],[.055,ARM_2/2-.17,.027],palette.accent,.17);
+      // LEVEL 4, wrist: distinct rotational joint and wrist connector.
+      drawJoint(wrist,[0,0,0],.22,.15+.1*Math.sin(seconds*3));
+      drawPart('cylinder',wrist,[0,ARM_3/2,0],[.15,ARM_3/2,.15],palette.shell);
+      // LEVEL 5, gripper: jaw spacing is controlled within the hand's frame.
+      drawPart('cube',gripper,[0,.09,0],[.39,.14,.27],palette.dark);
+      drawPart('cube',gripper,[0,.22,0],[.28,.055,.20],palette.gold,.26);
+      const gap = .235 + pose.grip/100*.33;
+      for (const side of [-1,1]) {
+        drawPart('cube',gripper,[side*gap,.55,0],[.105,.35,.16],palette.shell);
+        drawPart('cube',gripper,[side*(gap-.085),.81,0],[.08,.10,.18],palette.accent,.46);
+        drawPart('sphere',gripper,[side*gap,.39,0],[.14,.14,.14],palette.steel);
+      }
+    }
+    function drawTrail() {
+      if (!document.getElementById('showTrail').checked || trail.length === 0) return;
+      gl.depthMask(false);
+      for (let i = 0; i < trail.length; i++) {
+        const fade = (i+1)/trail.length;
+        drawPart('sphere',I,trail[i],[.046,.046,.046],palette.accent,.8,fade*.5);
+      }
+      gl.depthMask(true);
+    }
+    function animate(dt) {
+      if (!auto) return;
+      autoTime += dt * Number(document.getElementById('speed').value);
+      const t = autoTime;
+      pose.base = -15 + 62*Math.sin(.44*t);
+      pose.shoulder = 39 + 25*Math.sin(.75*t+.25);
+      pose.elbow = 24 + 38*Math.sin(.86*t+1.0);
+      pose.wrist = -32 + 46*Math.sin(.98*t+2.2);
+      pose.grip = 52 + 44*Math.sin(1.45*t);
+      syncControls();
+    }
+    function render(now) {
+      const dt = Math.min(.06,(now-lastFrame)/1000); lastFrame = now;
+      animate(dt);
+      const h = buildHierarchy();
+      trailAccum += dt;
+      if (trailAccum > .07) {
+        trailAccum = 0;
+        trail.push(transformPoint(h.gripper,[0,.90,0]));
+        if (trail.length > 55) trail.shift();
+      }
+      gl.viewport(0,0,canvas.width,canvas.height);
+      gl.clearColor(.012,.026,.052,1);
+      gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      // Viewing transformations are deliberately separate from model hierarchy.
+      const view = matMul(mat4Translation(0,-1.35,-cameraDistance),mat4RotationX(orbitX),mat4RotationY(orbitY));
+      const aspect = canvas.width/canvas.height;
+      const projection = perspectiveMode ? perspective(rad(47),aspect,.1,100) : ortho(-6.5*aspect,6.5*aspect,-6.5,6.5,.1,100);
+      gl.uniformMatrix4fv(loc.view,false,view);
+      gl.uniformMatrix4fv(loc.projection,false,projection);
+      drawStage(now/1000);
+      drawArm(h,now/1000);
+      drawTrail();
+      requestAnimationFrame(render);
+    }
+    syncControls(); updateAutoUI();
+    requestAnimationFrame(render);
+  </script>
+</body>
+</html>
