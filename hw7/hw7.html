@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="dark"/>
+  <title>CS 412 — HW7 | HW7 Ray Tracing — Junho Lee</title>
+  <style>
+    :root{color-scheme:dark;--bg:#090f1b;--panel:#111b2b;--panel2:#162335;--ink:#eaf3f6;--muted:#96a9b9;--gold:#e8bb73;--line:#2b4156;--blue:#80b8dd}
+    *{box-sizing:border-box}
+    body{margin:0;font:14px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:radial-gradient(circle at 72% 0,#183047 0,#0d1726 40%,var(--bg) 90%)}
+    .shell{width:min(1430px,96%);margin:0 auto;padding:24px 0 42px}
+    header{display:flex;justify-content:space-between;gap:24px;align-items:end;margin-bottom:19px;flex-wrap:wrap}
+    .eyebrow{color:var(--gold);letter-spacing:.2em;text-transform:uppercase;font-size:10px;font-weight:800}
+    h1{font-family:Georgia,'Times New Roman',serif;font-weight:500;letter-spacing:-.035em;font-size:clamp(30px,4.5vw,49px);margin:3px 0 2px}
+    header p{margin:0;color:var(--muted);max-width:690px}
+    .meta{font-size:11px;color:var(--blue);border:1px solid #41647d;padding:8px 12px;border-radius:99px;white-space:nowrap}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 305px;gap:16px;align-items:start}
+    .viewport{background:#080f1b;border:1px solid #3c5166;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 12px 50px #0008}
+    canvas{display:block;width:100%;height:auto;aspect-ratio:16/10;touch-action:none;cursor:grab;background:linear-gradient(#1f3549,#cb7050 55%,#153844 56%,#0c202b)}
+    canvas:active{cursor:grabbing}
+    .ribbon{position:absolute;top:17px;left:20px;z-index:1;pointer-events:none}
+    .ribbon strong{display:block;letter-spacing:.18em;font-size:11px;text-shadow:0 2px 10px #000}
+    .ribbon span{font-size:10px;color:#c8d9df;letter-spacing:.08em;text-shadow:0 2px 10px #000}
+    .legend{display:flex;gap:9px;align-items:center;justify-content:space-between;padding:12px 18px;background:#0f1927;border-top:1px solid #2b3e52;flex-wrap:wrap}
+    .legend span{font-size:11px;color:var(--muted)}
+    .stats{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{font-size:10px;border:1px solid #455b6a;color:#c9d8df;padding:3px 8px;border-radius:12px;white-space:nowrap}
+    .pill b{color:var(--gold);font-weight:600}
+    aside{display:flex;flex-direction:column;gap:13px}
+    .panel{padding:16px;background:linear-gradient(145deg,#152338,#0e1a2b);border:1px solid #304358;border-radius:14px;box-shadow:0 6px 25px #0002}
+    .panel h2{margin:0 0 10px;font-size:13px;letter-spacing:.075em;text-transform:uppercase;color:#d7e5eb}
+    .subheading{margin:13px 0 8px;color:var(--gold);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:800}
+    .control{margin:10px 0}.control label{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#c0d0dd}
+    output{color:var(--gold);font-variant-numeric:tabular-nums;font-size:12px}
+    input[type=range]{width:100%;accent-color:#f1c078;margin:7px 0 1px;cursor:pointer}
+    input[type=checkbox]{accent-color:#ddad64;margin:0 8px 0 0}
+    .toggle{display:flex;align-items:center;margin:10px 0;color:#bed0dc;font-size:12px;cursor:pointer}
+    .buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+    button{cursor:pointer;border:1px solid #46657c;border-radius:8px;padding:9px 8px;background:#1b344b;color:#f0f7fa;font-weight:650;font-size:12px}
+    button:hover{background:#2b4861}button:focus-visible,input:focus-visible{outline:2px solid #e8bb73;outline-offset:2px}
+    .note{font-size:11px;line-height:1.55;color:#9eb2c1;margin:9px 0 0}
+    .features{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:15px}
+    .feature{background:#111d2c;border:1px solid #283a4b;border-radius:11px;padding:14px 15px}
+    .feature strong{display:block;color:#e7c08b;font-size:12px;margin-bottom:2px}
+    .feature p{color:#9cabb9;font-size:11px;margin:0}
+    details{margin-top:15px;border:1px solid #2d4357;border-radius:11px;overflow:hidden;background:#0c1726}
+    summary{padding:13px 17px;color:#cadce5;cursor:pointer;font-weight:600;font-size:12px}
+    .editors{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px 12px}
+    .editor-wrap label{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}
+    textarea{background:#07111c;border:1px solid #354b5b;color:#b0e6c5;width:100%;height:290px;resize:vertical;font:11px/1.43 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;tab-size:2;border-radius:7px;padding:11px}
+    #shaderError{white-space:pre-wrap;color:#ffa09a;font:12px/1.5 ui-monospace,monospace;margin:0;padding:0 12px 12px}
+    footer{color:#8ba1af;text-align:center;font-size:11px;margin-top:21px}
+    #message{color:#f4d3a6}
+    @media(max-width:1000px){.layout{grid-template-columns:1fr}.features{grid-template-columns:repeat(2,1fr)}aside{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:610px){.shell{width:95%;padding-top:16px}.features,aside,.editors{grid-template-columns:1fr}.ribbon{top:10px;left:12px}.meta{display:none}}
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header>
+    <div><div class="eyebrow">University of New Mexico · CS 412 · Homework 7</div><h1>HW7 Ray Tracing</h1>
+      <p>For HW7, I implemented ray tracing using my sailing ship from HW3, adding realistic light transport, reflective brass, glass refraction, and an animated sea.</p></div>
+    <div class="meta">Junho Lee · WebGL2 · GLSL ES 3.00</div>
+  </header>
+  <div class="layout">
+    <div>
+      <section class="viewport" aria-label="Ray traced maritime scene">
+        <div class="ribbon"><strong>HW7 Ray Tracing</strong><span>A JOURNEY THROUGH LIGHT</span></div>
+        <canvas id="glcanvas" width="720" height="450" aria-label="Interactive ray-traced ship and lighthouse"></canvas>
+        <div class="legend"><span>Drag to orbit · Scroll to zoom · Rendered with fullscreen shader ray tracing</span>
+          <div class="stats"><span class="pill">RAYS <b>ON</b></span><span class="pill" id="fpsLabel">FPS —</span><span class="pill" id="sizeLabel">720 × 450</span></div></div>
+      </section>
+      <div class="features">
+        <div class="feature"><strong>01 · Intersections</strong><p>Ray-marched SDF geometry: ship hull, cabin, sails, lighthouse, its single glass lens and ocean.</p></div>
+        <div class="feature"><strong>02 · Phong + Shadows</strong><p>Two colored point lights with diffuse/specular response and secondary shadow rays.</p></div>
+        <div class="feature"><strong>03 · Reflection</strong><p>Iterative reflected rays from polished brass, hull and Fresnel-weighted sea.</p></div>
+        <div class="feature"><strong>04 · Glass Refraction</strong><p>Air-to-glass and glass-to-air paths, Snell's law and Schlick's Fresnel approximation.</p></div>
+      </div>
+      <details>
+        <summary>Shader source (live edit) · Vertex &amp; Fragment</summary>
+        <div class="editors">
+          <div class="editor-wrap"><label for="vertEditor">Vertex Shader</label><textarea id="vertEditor" spellcheck="false"></textarea></div>
+          <div class="editor-wrap"><label for="fragEditor">Fragment Shader</label><textarea id="fragEditor" spellcheck="false"></textarea></div>
+        </div>
+        <pre id="shaderError" role="alert"></pre>
+      </details>
+    </div>
+    <aside>
+      <section class="panel">
+        <h2>Camera &amp; Motion</h2>
+        <div class="buttons"><button id="playButton">Pause animation</button><button id="resetButton">Reset view</button></div>
+        <div class="control"><label for="quality">Render resolution <output id="qualityValue">65%</output></label><input id="quality" type="range" min="40" max="100" step="5" value="65"/></div>
+        <p class="note">The ship gently rocks, sails billow, the sea rolls, and the lighthouse beacon glows. Changes are rendered directly by the ray tracer.</p>
+      </section>
+      <section class="panel">
+        <h2>Ray Tracing Controls</h2>
+        <div class="control"><label for="bounces">Maximum ray bounces <output id="bouncesValue">4</output></label><input id="bounces" type="range" min="1" max="6" step="1" value="4"/></div>
+        <div class="control"><label for="ior">Glass refractive index (IOR) <output id="iorValue">1.50</output></label><input id="ior" type="range" min="1.05" max="2.00" step="0.05" value="1.50"/></div>
+        <label class="toggle"><input type="checkbox" id="shadows" checked/> Ray-traced shadows</label>
+        <label class="toggle"><input type="checkbox" id="reflections" checked/> Recursive reflections</label>
+        <label class="toggle"><input type="checkbox" id="refraction" checked/> Glass refraction</label>
+        <p class="note">Disable each effect individually to explain the differences during grading.</p>
+      </section>
+      <section class="panel">
+        <h2>Light &amp; Atmosphere</h2>
+        <div class="control"><label for="lightA">Warm lighthouse / key light <output id="lightAValue">1.80</output></label><input id="lightA" type="range" min="0" max="4" step="0.1" value="1.8"/></div>
+        <div class="control"><label for="lightB">Cool moonlit fill <output id="lightBValue">1.35</output></label><input id="lightB" type="range" min="0" max="4" step="0.1" value="1.35"/></div>
+        <div class="control"><label for="wave">Ocean wave height <output id="waveValue">1.00</output></label><input id="wave" type="range" min="0" max="2" step="0.05" value="1"/></div>
+        <div class="control"><label for="exposure">Exposure <output id="exposureValue">1.10</output></label><input id="exposure" type="range" min="0.35" max="2.5" step="0.05" value="1.1"/></div>
+      </section>
+      <section class="panel">
+        <h2>Render Status</h2>
+        <p id="message" aria-live="polite">Compiling shaders…</p>
+        <p class="note">All scene objects are evaluated by ray intersections in the fragment shader. No 3D mesh rasterization is used. The single fullscreen triangle only provides screen pixels.</p>
+      </section>
+    </aside>
+  </div>
+  <footer>CS 412 / 512 · Ray Tracing · Junho Lee · Reimagined from HW3</footer>
+</main>
+<script src="raytracer.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
