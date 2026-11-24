@@ -51,11 +51,10 @@ function compileProgram() {
 }
 function bindSlider(id, digits=2) {
   const el=document.querySelector('#'+id), output=document.querySelector('#'+id+'Value');
-  function sync() { output.textContent=Number(el.value).toFixed(digits)+(id==='quality'?'%':''); }
+  function sync() { output.textContent=Number(el.value).toFixed(digits); }
   el.addEventListener('input',sync); sync();
   return () => Number(el.value);
 }
-const getQuality=bindSlider('quality',0);
 const getBounces=bindSlider('bounces',0);
 const getIOR=bindSlider('ior');
 const getLightA=bindSlider('lightA');
@@ -65,8 +64,9 @@ const getExposure=bindSlider('exposure');
 const isOn=id=>document.querySelector('#'+id).checked;
 const sizeLabel=document.querySelector('#sizeLabel');
 function resize() {
-  const displayWidth=Math.min(1110, Math.max(350,canvas.getBoundingClientRect().width));
-  const w=Math.round(displayWidth * getQuality()/100);
+  // Fixed 100% render resolution: one framebuffer pixel per CSS canvas pixel.
+  const displayWidth=Math.min(1110, Math.max(1,canvas.getBoundingClientRect().width));
+  const w=Math.max(1, Math.round(displayWidth));
   const h=Math.round(w*10/16);
   if (canvas.width!==w || canvas.height!==h) {canvas.width=w;canvas.height=h;}
   sizeLabel.textContent=`${w} × ${h}`;

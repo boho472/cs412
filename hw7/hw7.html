@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="dark"/>
-  <title>CS 412 — HW7 | HW7 Ray Tracing — Junho Lee</title>
+  <title>CS 412 — HW7 | The Last Voyage — Junho Lee</title>
   <style>
     :root{color-scheme:dark;--bg:#090f1b;--panel:#111b2b;--panel2:#162335;--ink:#eaf3f6;--muted:#96a9b9;--gold:#e8bb73;--line:#2b4156;--blue:#80b8dd}
     *{box-sizing:border-box}
@@ -59,14 +59,14 @@
 <body>
 <main class="shell">
   <header>
-    <div><div class="eyebrow">University of New Mexico · CS 412 · Homework 7</div><h1>HW7 Ray Tracing</h1>
+    <div><div class="eyebrow">University of New Mexico · CS 412 · Homework 7</div><h1>The Last Voyage</h1>
       <p>For HW7, I implemented ray tracing using my sailing ship from HW3, adding realistic light transport, reflective brass, glass refraction, and an animated sea.</p></div>
     <div class="meta">Junho Lee · WebGL2 · GLSL ES 3.00</div>
   </header>
   <div class="layout">
     <div>
       <section class="viewport" aria-label="Ray traced maritime scene">
-        <div class="ribbon"><strong>HW7 Ray Tracing</strong><span>A JOURNEY THROUGH LIGHT</span></div>
+        <div class="ribbon"><strong>THE LAST VOYAGE</strong><span>A JOURNEY THROUGH LIGHT</span></div>
         <canvas id="glcanvas" width="720" height="450" aria-label="Interactive ray-traced ship and lighthouse"></canvas>
         <div class="legend"><span>Drag to orbit · Scroll to zoom · Rendered with fullscreen shader ray tracing</span>
           <div class="stats"><span class="pill">RAYS <b>ON</b></span><span class="pill" id="fpsLabel">FPS —</span><span class="pill" id="sizeLabel">720 × 450</span></div></div>
@@ -90,7 +90,6 @@
       <section class="panel">
         <h2>Camera &amp; Motion</h2>
         <div class="buttons"><button id="playButton">Pause animation</button><button id="resetButton">Reset view</button></div>
-        <div class="control"><label for="quality">Render resolution <output id="qualityValue">65%</output></label><input id="quality" type="range" min="40" max="100" step="5" value="65"/></div>
         <p class="note">The ship gently rocks, sails billow, the sea rolls, and the lighthouse beacon glows. Changes are rendered directly by the ray tracer.</p>
       </section>
       <section class="panel">

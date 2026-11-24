@@ -6,13 +6,9 @@ University of New Mexico — CS 412 / 512 Computer Graphics
 
 https://boho472.github.io/cs412/hw7/hw7.html
 
-The project is an original ray-traced reinterpretation of my HW3 sailboat, with a
-lighthouse, reflective ocean and a single transparent glass lens atop the lighthouse.
-A red-and-gold signal pillar stands slightly left of and behind the lighthouse glass
-lens in the default view, providing an easy-to-see refracted object. The
-professor's homework template was available as a screenshot, rather than an
-editable source file, so this is a standalone implementation with equivalent
-WebGL2 / GLSL rendering and a live shader editor.
+For HW7, I implemented ray tracing using my sailing ship from HW3, adding realistic light transport, reflective brass, glass refraction, and an animated sea.
+
+A red-and-gold signal pillar is placed behind the single glass sphere on the lighthouse to demonstrate refraction.
 
 ## Files
 
@@ -49,7 +45,7 @@ screen fragments**; every visible 3D object is intersected by scene ray tracing.
 6. **Two lights** — Warm gold key light and cool blue fill are independent,
    both affecting diffuse/specular lighting and cast shadows.
 7. **Interactive controls** — Bounce count, IOR, shadow/reflection/refraction
-   toggles, both light intensities, wave height, exposure, render resolution,
+   toggles, both light intensities, wave height, exposure,
    orbit/zoom, reset camera and pause animation.
 8. **Bonus effects** — Procedural animated ocean, ship bob/roll, billowing sails,
    sunset sky, lighthouse glow, reflected ship/lighthouse and glass optics.
@@ -63,8 +59,9 @@ python3 -m http.server 8000
 ```
 
 Open http://localhost:8000/hw7/hw7.html in Chrome or Safari. A modern browser
-with WebGL2 enabled is required. A slower computer may benefit from selecting
-40–55% render resolution or lowering the maximum bounce count.
+with WebGL2 enabled is required. The canvas always renders at 100% of its CSS
+resolution (no resolution slider). On slower computers, lower the maximum bounce
+count to improve responsiveness.
 
 ## Submission
 
